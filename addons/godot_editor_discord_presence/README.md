@@ -1,0 +1,61 @@
+Godot Editor Discord Presence
+=========================================
+###### (Get it from Godot Asset Library - Coming soon)
+
+
+### Shows what you are doing in the Godot Editor as your Discord presence.
+
+> Currently supports only Windows
+
+<img alt="Godot3" src="https://img.shields.io/badge/-Godot 3.x-478CBF?style=for-the-badge&logo=godotengine&logoWidth=20&logoColor=white" />
+<br>
+
+
+<img src="https://cdn.discordapp.com/attachments/360062738615107605/928505174375419906/plugin_icon.png" height="400">
+
+
+Features
+--------------
+
+- Updates the presence in real-time
+- Two customizable URL buttons
+- Supports showing scripts like GDScript, VisualScript, NativeScript and CSharpScript
+
+
+Installation
+--------------
+
+This is a regular plugin for Godot.
+Copy the contents of `addons/godot_editor_discord_presence/` into the `addons/godot_editor_discord_presence/` folder in the same directory as your project, and activate it in your ProjectSettings.
+
+**Optional:** To exclude the plugin when exporting your project, you can add `addons/godot_editor_discord_presence/*` to the `Filters to exclude files/folders from project` in the Export settings.
+
+<img src="https://cdn.discordapp.com/attachments/360062738615107605/928504347120242688/unknown.png" height="300">
+
+### Customizing the buttons
+
+Once the plugin is enabled, close and open `ProjectSettings`. Now you can customize the two buttons by editing the values in the `Discord Presence` section. Then to apply the changes, disable and enable the plugin.
+
+To hide a certain button, simply set the label to an empty string.
+
+<img src="https://cdn.discordapp.com/attachments/360062738615107605/928502193148014602/unknown.png" height="400">
+
+
+
+
+Contributing
+-----------
+
+This plugin is a non-profit project developped by voluntary contributors.
+
+
+Third Party
+-----------
+This plugin uses [Discord-RPC-GDScript](https://github.com/Abdera7mane/Discord-RPC-GDScript) by [Abdera7mane](https://github.com/Abdera7mane)
+
+### Support the project development
+<a href="https://www.buymeacoffee.com/3ddelano" target="_blank"><img height="41" width="174" src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me A Coffee" width="150" ></a>
+
+Want to support in other ways? Contact me on Discord: `@3ddelano#6033`
+
+For doubts / help / bugs / problems / suggestions do join: [3ddelano Cafe](https://discord.gg/FZY9TqW)

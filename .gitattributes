@@ -1,0 +1,14 @@
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/.gitmodules        export-ignore
+/.github            export-ignore
+/.readthedocs.yml   export-ignore
+/project.godot      export-ignore
+/plugin_icon.png.import      export-ignore
+/plugin_icon.png      export-ignore
+/LICENSE.md      export-ignore
+/README.md      export-ignore
+/CHANGELOG.md      export-ignore
+/plugin_icon.png      export-ignore
+/plugin_icon.png      export-ignore
+/test      export-ignore
