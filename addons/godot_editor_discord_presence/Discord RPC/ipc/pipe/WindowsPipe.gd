@@ -1,30 +1,32 @@
-class_name DiscordRPCWindowsPipe extends DiscordRPCNamedPipe
+class_name WindowsPipe extends IPCPipe
 
 var _file: File
 
-func _init() -> void:
-	_file = File.new()
-
 func open(path: String) -> int:
-	return _file.open(path, File.READ_WRITE)
+	self._file = File.new()
+	return self._file.open(path, File.READ_WRITE)
 
 func read() -> Array:
-	var op_code: int = _file.get_32()
-	var length: int = _file.get_32()
-	var buffer = _file.get_buffer(length)
+	var op_code: int = self._file.get_32()
+	var length: int = self._file.get_32()
+	var buffer: PoolByteArray = self._file.get_buffer(length)
 	return [op_code, buffer]
 
 func write(bytes: PoolByteArray) -> void:
-	_file.store_buffer(bytes)
+	self._file.store_buffer(bytes)
+
+#func is_open() -> bool:
+#	return self._file and self._file.is_open()
 
 func is_open() -> bool:
-	return _file.is_open()
+	return _file and (_file.is_open() and not _file.eof_reached())
 
 func has_reading() -> bool:
-	return not _file.get_len() == 0
+	return self._file.get_len() > 0
 
 func close() -> void:
-	_file.close()
+	self._file.close()
+	self._file = null
 
 func _to_string() -> String:
-	return "[WindowsIPCPipe:%d]" % get_instance_id()
+	return "[WindowsPipe:%d]" % self.get_instance_id()

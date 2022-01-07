@@ -1,4 +1,4 @@
-class_name DiscordRPCRichPresenceModule extends DiscordRPCIPCModule
+class_name RichPresenceModule extends IPCModule
 
 
 func _init().("RichPresence") -> void:
@@ -7,6 +7,6 @@ func _init().("RichPresence") -> void:
 func get_functions() -> PoolStringArray:
 	return PoolStringArray(["update_presence"])
 
-func update_presence(presence: DiscordRPCRichPresence) -> void:
-	var request: DiscordRPCIPCPayload = DiscordRPCUpdateRichPresencePayload.new(presence)
-	_ipc.send(request)
+func update_presence(presence: RichPresence) -> void:
+	var request: IPCPayload = UpdateRichPresencePayload.new(presence)
+	self._ipc.send(request)

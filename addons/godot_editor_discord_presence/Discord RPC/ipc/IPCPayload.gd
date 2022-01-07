@@ -1,6 +1,14 @@
-class_name DiscordRPCIPCPayload
+class_name IPCPayload
 
-var op_code: int = 3
+enum OpCodes {
+	HANDSHAKE,
+	FRAME,
+	CLOSE,
+	PING,
+	PONG
+}
+
+var op_code: int = OpCodes.PING
 var nonce: String
 var command: String
 var event: String
@@ -8,42 +16,42 @@ var data: Dictionary
 var arguments: Dictionary
 
 func _init() -> void:
-	generate_nonce()
+	self.generate_nonce()
 
 func generate_nonce() -> void:
-	nonce = DiscordRPCUUID.v4()
+	self.nonce = UUID.v4()
 
 func is_error() -> bool:
-	return event == "ERROR"
+	return event == DiscordRPCEnum.Events.ERROR
 
 func get_error_code() -> int:
 	var code: int
-	if (is_error()):
-		code = data["code"]
+	if (self.is_error()):
+		code = self.data["code"]
 	return code
 
 func get_error_messsage() -> String:
 	var message: String
-	if (is_error()):
-		message = data["message"]
+	if (self.is_error()):
+		message = self.data["message"]
 	return message
 
 func to_dict() -> Dictionary:
 	return {
-		"nonce": nonce,
-		"cmd": command,
-		"evt": event if not event.empty() else null,
-		"data": data,
-		"args": arguments
+		"nonce": self.nonce,
+		"cmd": self.command,
+		"evt": self.event if not self.event.empty() else null,
+		"data": self.data,
+		"args": self.arguments
 	}
 
 func to_bytes() -> PoolByteArray:
-	var buffer: PoolByteArray = to_json(to_dict()).to_utf8()
+	var buffer: PoolByteArray = to_json(self.to_dict()).to_utf8()
 	var stream: StreamPeerBuffer = StreamPeerBuffer.new()
-	stream.put_32(op_code)
+	stream.put_32(self.op_code)
 	stream.put_32(buffer.size())
 	stream.put_data(buffer)
 	return stream.data_array
 
 func _to_string() -> String:
-	return to_json(to_dict())
+	return "op_code: %s, payload: %s" %  [self.op_code, to_json(self.to_dict())]

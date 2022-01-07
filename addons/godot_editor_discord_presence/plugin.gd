@@ -5,11 +5,11 @@
 tool
 extends EditorPlugin
 const DEBUG = false
-
-const DiscordRPC = preload("Discord RPC/DiscordRPC.gd")
+const RECONNECT_DURATION = 60
 
 const _2D = "2D"
 const _3D = "3D"
+const SCENE_EDITORS = [_2D, _3D]
 const SCRIPT = "Script"
 const ASSETLIB = "AssetLib"
 
@@ -28,10 +28,13 @@ var _previous_script_name: String
 var _previous_scene_name: String
 var _previous_editor_name: String
 var _previous_details: String
+var _previous_large_image_text: String
+var _is_reconnecting = false
+var _reconnect_timer: Timer
 
 var application_id: int = 928212232213520454
 var rpc: DiscordRPC = null
-var presence: DiscordRPCRichPresence
+var presence: RichPresence
 
 const ASSETNAMES = {
 	_2D: "2d",
@@ -48,11 +51,16 @@ func debug_print(string: String):
 
 
 func _enter_tree() -> void:
+	_reconnect_timer = Timer.new()
+	_reconnect_timer.one_shot = true
+	_reconnect_timer.connect("timeout", self, "_on_reconnect_timer_timeout")
+	_reconnect_timer.wait_time = RECONNECT_DURATION
+	add_child(_reconnect_timer)
+
 	connect("main_screen_changed", self, "_on_main_scene_changed")
 	connect("scene_changed", self, "_on_scene_changed")
 	get_editor_interface().get_script_editor().connect("editor_script_changed", self, "_on_editor_script_changed")
 
-	_init_presence()
 	if not rpc:
 		_init_discord_rpc()
 
@@ -70,6 +78,9 @@ func _exit_tree() -> void:
 	if presence:
 		presence = null
 
+	if is_instance_valid(_reconnect_timer):
+		_reconnect_timer.queue_free()
+
 
 func disable_plugin() -> void:
 	if rpc and is_instance_valid(rpc):
@@ -79,9 +90,31 @@ func disable_plugin() -> void:
 		presence = null
 
 
+func _on_reconnect_timer_timeout():
+	_is_reconnecting = false
+	if rpc and is_instance_valid(rpc):
+		if not rpc.is_connected_to_client() and rpc.status != DiscordRPC.CONNECTING:
+			rpc.establish_connection(application_id)
+
+
+func _on_rpc_error(err) -> void:
+	if typeof(err) == TYPE_INT and err == DiscordRPC.ERR_CLIENT_NOT_FOUND:
+		debug_print("Discord client not found")
+
+		if not _is_reconnecting and is_instance_valid(_reconnect_timer):
+			# Not currently reconnecting so, start timer to wait to reconnect
+			print_debug("Trying to reconnect after %ss" % RECONNECT_DURATION)
+			_is_reconnecting = true
+			_reconnect_timer.start()
+
+	elif typeof(err) == TYPE_STRING:
+		debug_print("Got RPC Error String: " + err)
+
+
 func _init_discord_rpc() -> void:
 	debug_print("Initializing DiscordRPC")
 	rpc = DiscordRPC.new()
+	rpc.connect("rpc_error", self, "_on_rpc_error")
 	add_child(rpc)
 	rpc.connect("rpc_ready", self, "_on_rpc_ready")
 	rpc.establish_connection(application_id)
@@ -95,15 +128,24 @@ func _destroy_discord_rpc() -> void:
 
 func _on_rpc_ready(user: Dictionary):
 	debug_print("Connected to DiscordRPC")
-	_init_presence(true)
-
-
-func _init_presence(forced := false) -> void:
 	if presence != null:
-		if not forced:
-			return
+		print("!!!!!presence not null once connected")
+		if rpc and is_instance_valid(rpc) and rpc.is_connected_to_client():
+			_update(true)
+		return
+	_init_presence()
 
-	presence = DiscordRPCRichPresence.new()
+
+func _init_presence(dont_init := false) -> void:
+	var is_null = false
+
+	if presence != null and dont_init:
+		# Dont reset the presence if dont_inti is true
+		return
+	elif presence == null:
+		is_null = true
+
+	presence = RichPresence.new()
 
 	# Initial Presence Details
 	presence.details = "In Godot Editor"
@@ -116,15 +158,15 @@ func _init_presence(forced := false) -> void:
 		var label = ProjectSettings.get_setting(FIRST_BUTTON_PATH + "/label")
 		var url = ProjectSettings.get_setting(FIRST_BUTTON_PATH + "/url")
 		if label != "" and url != "":
-			presence.first_button = DiscordRPCRichPresenceButton.new(label, url)
+			presence.first_button = RichPresenceButton.new(label, url)
 
 	if ProjectSettings.has_setting(SECOND_BUTTON_PATH + "/label") and ProjectSettings.has_setting(SECOND_BUTTON_PATH + "/url"):
 		var label = ProjectSettings.get_setting(SECOND_BUTTON_PATH + "/label")
 		var url = ProjectSettings.get_setting(SECOND_BUTTON_PATH + "/url")
 		if label != "" and url != "":
-			presence.second_button = DiscordRPCRichPresenceButton.new(label, url)
+			presence.second_button = RichPresenceButton.new(label, url)
 
-	if is_instance_valid(rpc):
+	if is_null and rpc and is_instance_valid(rpc) and rpc.is_connected_to_client():
 		rpc.get_module("RichPresence").update_presence(presence)
 
 
@@ -144,11 +186,6 @@ func _on_main_scene_changed(screen_name: String) -> void:
 	if script != null:
 		_current_script_name = script.get_path().get_file()
 
-	if _current_scene_name == null:
-		var open_scenes = get_editor_interface().get_open_scenes()
-		if open_scenes.size() == 1:
-			_current_scene_name = open_scenes[0].get_file()
-
 	_update()
 
 
@@ -159,17 +196,35 @@ func _on_scene_changed(screen_root: Node) -> void:
 		_update()
 
 
-func _update() -> void:
+func _update(send_previous := false) -> void:
 	var just_started = false
 	var should_update = false
 
-	if _current_editor_name in [_2D, _3D]:
-		# Get the name of the currently opened scene
-		var scene = get_editor_interface().get_edited_scene_root()
-		if scene:
-			_current_scene_name = scene.filename.get_file()
+	var is_current_in_scene_editors = true if _current_editor_name in SCENE_EDITORS else false
+	var is_previous_in_scene_editors = true if _previous_editor_name in SCENE_EDITORS else false
 
-	_init_presence()
+	if _current_editor_name != _previous_editor_name:
+		if is_current_in_scene_editors:
+			# Currently in 2d or 3d editor
+
+			# Get the name of the currently opened scene
+			var scene = get_editor_interface().get_edited_scene_root()
+			if scene:
+				_current_scene_name = scene.filename.get_file()
+
+			if is_previous_in_scene_editors:
+				# Previous was also 2d or 3d
+				should_update = false
+			else:
+				# Previous was not 2d or 3d
+				should_update = true
+
+
+	if is_current_in_scene_editors and is_previous_in_scene_editors:
+		if _current_scene_name != _previous_scene_name:
+			just_started = true
+
+	_init_presence(not send_previous)
 	presence.small_image_key = ASSETNAMES.LOGO_SMALL
 	presence.small_image_text = "Godot Engine"
 	presence.large_image_key = ASSETNAMES[_current_editor_name]
@@ -178,37 +233,34 @@ func _update() -> void:
 		_2D:
 			presence.details = "Editing %s" % _current_scene_name
 			presence.large_image_text = "Editing scene in 2D"
-			if _current_scene_name != _previous_scene_name:
-				just_started = true
 
 		_3D:
 			presence.details = "Editing %s" % _current_scene_name
-			if _current_scene_name != _previous_scene_name:
-				just_started = true
 			presence.large_image_text = "Editing scene in 3D"
 
 		SCRIPT:
 			var script_type = SCRIPT
 			presence.details = "Editing %s" % _current_script_name
-			if _current_script_name != _previous_script_name:
-				# Script was changed
+
+			if _current_script_name != _previous_script_name or _current_editor_name != _previous_editor_name:
+				# Script was changed or editor was changed to script editor
 				just_started = true
 
-				var extension = _current_script_name.get_extension().to_lower()
-				# Find the type of the script based on the extension
-				match extension:
-					"gd":
-						script_type = GDSCRIPT
-						presence.large_image_key = "gdscript"
-					"vs":
-						script_type = VISUALSCRIPT
-						presence.large_image_key = "visualscript"
-					"gdns":
-						script_type = NATIVESCRIPT
-						presence.large_image_key = "nativescript"
-					"cs":
-						script_type = CSHARPSCRIPT
-						presence.large_image_key = "csharpscript"
+			var extension = _current_script_name.get_extension().to_lower()
+			# Find the type of the script based on the extension
+			match extension:
+				"gd":
+					script_type = GDSCRIPT
+					presence.large_image_key = "gdscript"
+				"vs":
+					script_type = VISUALSCRIPT
+					presence.large_image_key = "visualscript"
+				"gdns":
+					script_type = NATIVESCRIPT
+					presence.large_image_key = "nativescript"
+				"cs":
+					script_type = CSHARPSCRIPT
+					presence.large_image_key = "csharpscript"
 
 			if script_type == SCRIPT:
 				# Some other type of script file
@@ -222,21 +274,25 @@ func _update() -> void:
 			just_started = true
 
 
-
-	if just_started:
-		presence.start_timestamp = OS.get_unix_time()
+	if just_started or should_update:
+		if not send_previous or presence.start_timestamp == 0:
+			presence.start_timestamp = OS.get_unix_time()
 		should_update = true
 
-	if presence.details != _previous_details:
+	if presence.details != _previous_details or presence.large_image_text != _previous_large_image_text:
 		should_update = true
 
-	if should_update and is_instance_valid(rpc):
-		rpc.get_module("RichPresence").update_presence(presence)
+
+	if send_previous or should_update:
+		if rpc and is_instance_valid(rpc) and rpc.is_connected_to_client():
+			print_debug("Presence updated")
+			rpc.get_module("RichPresence").update_presence(presence)
 
 	_previous_editor_name = _current_editor_name
 	_previous_scene_name = _current_scene_name
 	_previous_script_name = _current_script_name
 	_previous_details = presence.details
+	_previous_details = presence.large_image_text
 
 
 func _add_custom_settings():

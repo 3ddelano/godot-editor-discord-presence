@@ -1,14 +1,14 @@
-class_name DiscordRPCIPCModule
+class_name IPCModule
 
-var _ipc: DiscordRPCIPC
+var _ipc: IPC
 
 var name: String
 
 func _init(_name: String) -> void:
-	name = _name
+	self.name = _name
 
-func initilize(ipc: DiscordRPCIPC) -> void:
-	_ipc = ipc
+func initilize(ipc: IPC) -> void:
+	self._ipc = ipc
 
 func get_functions() -> PoolStringArray:
 	return PoolStringArray()
