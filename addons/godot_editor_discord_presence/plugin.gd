@@ -1,4 +1,5 @@
 # Godot Editor Discord Presence Plugin
+# https://github.com/3ddelano/godot-editor-discord-presence
 # Author: (3ddelano) Delano Lourenco
 # For license: See LICENSE.md
 
@@ -103,7 +104,7 @@ func _on_rpc_error(err) -> void:
 
 		if not _is_reconnecting and is_instance_valid(_reconnect_timer):
 			# Not currently reconnecting so, start timer to wait to reconnect
-			print_debug("Trying to reconnect after %ss" % RECONNECT_DURATION)
+			debug_print("Trying to reconnect after %ss" % RECONNECT_DURATION)
 			_is_reconnecting = true
 			_reconnect_timer.start()
 
@@ -129,7 +130,6 @@ func _destroy_discord_rpc() -> void:
 func _on_rpc_ready(user: Dictionary):
 	debug_print("Connected to DiscordRPC")
 	if presence != null:
-		print("!!!!!presence not null once connected")
 		if rpc and is_instance_valid(rpc) and rpc.is_connected_to_client():
 			_update(true)
 		return
@@ -285,7 +285,6 @@ func _update(send_previous := false) -> void:
 
 	if send_previous or should_update:
 		if rpc and is_instance_valid(rpc) and rpc.is_connected_to_client():
-			print_debug("Presence updated")
 			rpc.get_module("RichPresence").update_presence(presence)
 
 	_previous_editor_name = _current_editor_name

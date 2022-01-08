@@ -7,7 +7,7 @@ Godot Editor Discord Presence
 
 > Supports Windows, Linux and OSX
 
-<img alt="Godot3" src="https://img.shields.io/badge/-Godot 3.x-478CBF?style=for-the-badge&logo=godotengine&logoWidth=20&logoColor=white" />
+<img alt="Godot3" src="https://img.shields.io/badge/-Godot >= 3.2.2-478CBF?style=for-the-badge&logo=godotengine&logoWidth=20&logoColor=white" />
 <br>
 
 
