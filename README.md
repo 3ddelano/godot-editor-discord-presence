@@ -17,20 +17,21 @@ Godot Editor Discord Presence
 Features
 --------------
 
-- Updates the presence in real-time
+- Updates the Discord presence in real-time
 - Has two customizable URL buttons
 - Supports showing scripts like GDScript, VisualScript, NativeScript and CSharpScript
+- Automatically reconnects to the Discord client
 
 
 Automatic Installation
 --------------
-Simply install from the `AssetLib` in the Godot Editor
+Simply install and enable from the `AssetLib` in the Godot Editor. You might need to restart the Godot Editor once the plugin is installed.
 
 Manual Installation
 --------------
 
 This is a regular plugin for Godot.
-Copy the contents of `addons/godot_editor_discord_presence/` into the `res://addons/godot_editor_discord_presence/` folder which is in your project directory. Then goto `ProjectSettings` and activate it in the `Plugins` tab.
+Copy the contents of `addons/godot_editor_discord_presence/` into the `res://addons/godot_editor_discord_presence/` folder which is in your project directory. You might need to restart the Godot Editor once the plugin is installed. Then goto `ProjectSettings` and activate it in the `Plugins` tab. 
 
 **Optional:** To exclude the plugin when exporting your project, you can add `addons/godot_editor_discord_presence/*` to the `Filters to exclude files/folders from project` in the Export settings.
 
