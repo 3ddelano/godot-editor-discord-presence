@@ -2,6 +2,9 @@ class_name IPC
 
 signal data_recieved(payload)
 
+const PING_INTERVAL_MS: int = 5000 # Send ping every 5s
+const PING_TIMOUT_MS: int = 1000 # Wait for 1s for response pong
+
 var _pipe: IPCPipe
 var _responses_pool: Array
 var _requests_pool: Array
@@ -97,10 +100,12 @@ func close() -> void:
 	self._semaphore = null
 
 func poll() -> void:
-	while (self._responses_pool.size() > 0):
-		self._mutex.lock()
-		self.emit_signal("data_recieved", self._responses_pool.pop_back())
-		self._mutex.unlock()
+	if not is_open():
+		return
+	while _responses_pool.size() > 0:
+		_mutex.lock()
+		emit_signal("data_recieved", self._responses_pool.pop_back())
+		_mutex.unlock()
 	if self._semaphore:
 		self._semaphore.post()
 
@@ -109,9 +114,18 @@ func _connection_loop(data: Array) -> void:
 	var semaphore: Semaphore = data[1]
 	var pipe: IPCPipe = data[2]
 
+	var next_ping: int = OS.get_ticks_msec() + PING_INTERVAL_MS
+	var ping_nonce: String
+	var sent_ping: bool
+	var recieved_pong: bool
+	var last_ping: int
+
 	while (pipe.is_open()):
 		if (pipe.has_reading()):
 			var payload: IPCPayload = self.scan()
+			if sent_ping and payload.nonce == ping_nonce:
+				recieved_pong = true
+				continue
 			mutex.lock()
 			self._responses_pool.append(payload)
 			mutex.unlock()
@@ -122,8 +136,32 @@ func _connection_loop(data: Array) -> void:
 			mutex.lock()
 			self.post(self._requests_pool.pop_back())
 			mutex.unlock()
+
+		# Test to see if connection is still active
+		if not sent_ping and OS.get_ticks_msec() >= next_ping:
+			# If we havent sent ping and we can send a new ping
+			var payload: IPCPayload = IPCPayload.new()
+			payload.op_code = IPCPayload.OpCodes.PING
+			ping_nonce = payload.nonce
+			post(payload)
+			sent_ping = true
+			last_ping = OS.get_ticks_msec()
+
+		if sent_ping:
+			# We sent a ping
+			if not recieved_pong and OS.get_ticks_msec() >= last_ping + PING_TIMOUT_MS:
+				# Didnt get pong within PING TIMEOUT
+				break
+			elif recieved_pong:
+				# Got a PONG
+				sent_ping = false
+				recieved_pong = false
+				next_ping = OS.get_ticks_msec() + PING_INTERVAL_MS
+
 		if semaphore:
 			semaphore.wait()
+
+	close()
 
 static func get_pipe() -> IPCPipe:
 	var pipe: IPCPipe

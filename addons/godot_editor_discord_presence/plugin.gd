@@ -98,15 +98,19 @@ func _on_reconnect_timer_timeout():
 			rpc.establish_connection(application_id)
 
 
+func _try_to_reconnect():
+	if not _is_reconnecting and is_instance_valid(_reconnect_timer):
+		# Not currently reconnecting so, start timer to wait to reconnect
+		debug_print("Trying to reconnect after %ss" % RECONNECT_DURATION)
+		_is_reconnecting = true
+		_reconnect_timer.start()
+
+
 func _on_rpc_error(err) -> void:
 	if typeof(err) == TYPE_INT and err == DiscordRPC.ERR_CLIENT_NOT_FOUND:
 		debug_print("Discord client not found")
 
-		if not _is_reconnecting and is_instance_valid(_reconnect_timer):
-			# Not currently reconnecting so, start timer to wait to reconnect
-			debug_print("Trying to reconnect after %ss" % RECONNECT_DURATION)
-			_is_reconnecting = true
-			_reconnect_timer.start()
+		_try_to_reconnect()
 
 	elif typeof(err) == TYPE_STRING:
 		debug_print("Got RPC Error String: " + err)
@@ -118,6 +122,7 @@ func _init_discord_rpc() -> void:
 	rpc.connect("rpc_error", self, "_on_rpc_error")
 	add_child(rpc)
 	rpc.connect("rpc_ready", self, "_on_rpc_ready")
+	rpc.connect("rpc_closed", self, "_on_rpc_closed")
 	rpc.establish_connection(application_id)
 
 
@@ -134,6 +139,10 @@ func _on_rpc_ready(user: Dictionary):
 			_update(true)
 		return
 	_init_presence()
+
+
+func _on_rpc_closed():
+	_try_to_reconnect()
 
 
 func _init_presence(dont_init := false) -> void:
@@ -284,8 +293,14 @@ func _update(send_previous := false) -> void:
 
 
 	if send_previous or should_update:
-		if rpc and is_instance_valid(rpc) and rpc.is_connected_to_client():
-			rpc.get_module("RichPresence").update_presence(presence)
+		debug_print("Updating presence. Client connected = " + str(rpc.is_connected_to_client()))
+		if rpc and is_instance_valid(rpc):
+			if rpc.is_connected_to_client():
+				debug_print("Updated presence successfully")
+				rpc.get_module("RichPresence").update_presence(presence)
+			else:
+				# Try to reconnect to the client
+				_try_to_reconnect()
 
 	_previous_editor_name = _current_editor_name
 	_previous_scene_name = _current_scene_name

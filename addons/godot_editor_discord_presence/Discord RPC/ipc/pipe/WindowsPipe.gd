@@ -15,11 +15,8 @@ func read() -> Array:
 func write(bytes: PoolByteArray) -> void:
 	self._file.store_buffer(bytes)
 
-#func is_open() -> bool:
-#	return self._file and self._file.is_open()
-
 func is_open() -> bool:
-	return _file and (_file.is_open() and not _file.eof_reached())
+	return self._file and self._file.is_open()
 
 func has_reading() -> bool:
 	return self._file.get_len() > 0

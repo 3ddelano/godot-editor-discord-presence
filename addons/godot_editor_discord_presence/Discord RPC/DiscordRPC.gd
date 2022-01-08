@@ -34,7 +34,8 @@ enum {
 }
 
 enum {
-	ERR_UNSUPPORTED
+	ERR_UNSUPPORTED = 49,
+	ERR_HANDSHAKE,
 	ERR_CLIENT_NOT_FOUND
 }
 
@@ -46,7 +47,7 @@ var _modules: Dictionary setget __set
 
 var status: int = DISCONNECTED setget __set
 var client_id: int setget __set
-var scopes: PoolStringArray setget __set, get_scopes
+var scopes: PoolStringArray setget __set
 
 func _init() -> void:
 	_ipc = IPC.new()
@@ -61,10 +62,12 @@ func establish_connection(_client_id: int) -> void:
 
 	if (not self.is_supported()):
 		push_error("IPC error: Unsuported platform")
+		emit_signal("rpc_error", ERR_UNSUPPORTED)
 		return
 
 	if (not self.is_inside_tree()):
 		push_error("DiscordRPC isn't inside a scene tree")
+		emit_signal("rpc_error", ERR_UNCONFIGURED)
 		return
 
 	client_id = _client_id
@@ -81,7 +84,7 @@ func establish_connection(_client_id: int) -> void:
 	self.shutdown()
 
 func is_connected_to_client() -> bool:
-	return self._ipc.is_open() and self.status != DISCONNECTED
+	return self._ipc and self._ipc.is_open() and self.status != DISCONNECTED
 
 func authorize(_scopes: PoolStringArray, secret: String) -> void:
 	var request: IPCPayload = IPCUtil.AuthorizePayload.new(self.client_id, _scopes)
@@ -162,9 +165,6 @@ func ipc_call(function: String, arguments: Array = []):
 	push_error("Calling non-existant function \"%s\" via ipc_call" % function)
 	return null
 
-func get_scopes() -> PoolStringArray:
-	return Array(scopes) as PoolStringArray # returns a copy
-
 func _handshake() -> void:
 	if (self.status == CONNECTED):
 		push_error("Already handshaked !")
@@ -175,7 +175,7 @@ func _handshake() -> void:
 		status = CONNECTED
 		self.emit_signal("rpc_ready", response.data["user"])
 		return
-	self.emit_signal("rpc_error", "Could not setup RPC connection")
+	self.emit_signal("rpc_error", ERR_HANDSHAKE)
 	self.shutdown()
 
 func _notification(what: int) -> void:
@@ -184,11 +184,10 @@ func _notification(what: int) -> void:
 			self.shutdown()
 
 func _process(_delta: float) -> void:
-	if (self.status != DISCONNECTED and not self._ipc.is_open()):
-		self.shutdown()
-		self.set_process(false)
-	else:
-		self._ipc.poll()
+	self._ipc.poll()
+	_ipc.poll()
+	if not _ipc.is_open():
+		shutdown()
 
 func _on_data(payload: IPCPayload) -> void:
 	if (payload.is_error()):
