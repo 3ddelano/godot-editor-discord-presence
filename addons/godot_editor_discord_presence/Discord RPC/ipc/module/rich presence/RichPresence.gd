@@ -1,5 +1,7 @@
 class_name RichPresence
 
+# warning-ignore-all:narrowing_conversion
+
 var state: String
 var details: String
 var start_timestamp: int

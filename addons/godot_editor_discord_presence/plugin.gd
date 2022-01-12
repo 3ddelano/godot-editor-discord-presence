@@ -73,14 +73,15 @@ func _exit_tree() -> void:
 	disconnect("scene_changed", self, "_on_scene_changed")
 	get_editor_interface().get_script_editor().disconnect("editor_script_changed", self, "_on_editor_script_changed")
 
+	if is_instance_valid(_reconnect_timer):
+		_reconnect_timer.queue_free()
+
 	if rpc and is_instance_valid(rpc):
 		_destroy_discord_rpc()
 
 	if presence:
 		presence = null
 
-	if is_instance_valid(_reconnect_timer):
-		_reconnect_timer.queue_free()
 
 
 func disable_plugin() -> void:
