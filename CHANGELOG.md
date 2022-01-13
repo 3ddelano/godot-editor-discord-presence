@@ -4,6 +4,10 @@ Changelog
 This is a high-level changelog for each released versions of the plugin.
 For a more detailed list of past changes, see the commit history.
 
+1.2.3
+------
+- Fixed a bug that only showed the script as presence instead of showing the current editor
+
 1.2.2
 ------
 - Removed slash in path for custom ProjectSetting

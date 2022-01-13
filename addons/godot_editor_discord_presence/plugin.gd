@@ -184,7 +184,8 @@ func _init_presence(dont_init := false) -> void:
 
 func _on_editor_script_changed(script: Script) -> void:
 	if script:
-		_current_editor_name = SCRIPT
+		if _current_editor_name != SCRIPT:
+			return
 		_current_script_name = script.get_path().get_file()
 		debug_print("Editor script changed: " + _current_script_name)
 		_update()
