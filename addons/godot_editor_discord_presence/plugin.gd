@@ -19,8 +19,8 @@ const VISUALSCRIPT = "VisualScript"
 const NATIVESCRIPT = "NativeScript"
 const CSHARPSCRIPT = "C# Script"
 
-const FIRST_BUTTON_PATH = "/discord_presence/first_button"
-const SECOND_BUTTON_PATH = "/discord_presence/second_button"
+const FIRST_BUTTON_PATH = "discord_presence/first_button"
+const SECOND_BUTTON_PATH = "discord_presence/second_button"
 
 var _current_script_name: String
 var _current_scene_name: String
