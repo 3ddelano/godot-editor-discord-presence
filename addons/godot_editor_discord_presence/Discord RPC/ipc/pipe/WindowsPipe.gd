@@ -7,29 +7,23 @@ func open(path: String) -> int:
 	return self._file.open(path, File.READ_WRITE)
 
 func read() -> Array:
-	if not is_open():
-		return [-1, PoolByteArray()]
-	
 	var op_code: int = self._file.get_32()
 	var length: int = self._file.get_32()
 	var buffer: PoolByteArray = self._file.get_buffer(length)
-	
 	return [op_code, buffer]
 
 func write(bytes: PoolByteArray) -> void:
-	if is_open():
-		_file.store_buffer(bytes)
+	self._file.store_buffer(bytes)
 
 func is_open() -> bool:
-	return _file and _file.is_open()
+	return self._file and self._file.is_open()
 
 func has_reading() -> bool:
-	return _file.get_len() > 0 if _file else false
+	return self._file.get_len() > 0
 
 func close() -> void:
-	if _file and _file.is_open():
-		_file.close()
-	_file = null
+	self._file.close()
+	self._file = null
 
 func _to_string() -> String:
 	return "[WindowsPipe:%d]" % self.get_instance_id()

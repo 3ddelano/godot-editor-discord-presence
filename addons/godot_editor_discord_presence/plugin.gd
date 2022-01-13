@@ -32,6 +32,7 @@ var _previous_details: String
 var _previous_large_image_text: String
 var _is_reconnecting = false
 var _reconnect_timer: Timer
+var _is_ready = false
 
 var application_id: int = 928212232213520454
 var rpc: DiscordRPC = null
@@ -110,7 +111,7 @@ func _try_to_reconnect():
 func _on_rpc_error(err) -> void:
 	if typeof(err) == TYPE_INT and err == DiscordRPC.ERR_CLIENT_NOT_FOUND:
 		debug_print("Discord client not found")
-
+		_is_ready = false
 		_try_to_reconnect()
 
 	elif typeof(err) == TYPE_STRING:
@@ -134,6 +135,7 @@ func _destroy_discord_rpc() -> void:
 
 
 func _on_rpc_ready(user: Dictionary):
+	_is_ready = true
 	debug_print("Connected to DiscordRPC")
 	if presence != null:
 		if rpc and is_instance_valid(rpc) and rpc.is_connected_to_client():
@@ -293,7 +295,7 @@ func _update(send_previous := false) -> void:
 		should_update = true
 
 
-	if send_previous or should_update:
+	if (send_previous or should_update) and _is_ready:
 		debug_print("Updating presence. Client connected = " + str(rpc.is_connected_to_client()))
 		if rpc and is_instance_valid(rpc):
 			if rpc.is_connected_to_client():

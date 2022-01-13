@@ -1,4 +1,4 @@
-class_name DiscordRPCUtil
+class_name DiscordRPCEnum
 
 const Commands: Dictionary = {
 	DISPATCH = "DISPATCH",
