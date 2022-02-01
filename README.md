@@ -21,11 +21,14 @@ Features
 - Has two customizable URL buttons
 - Supports showing scripts like GDScript, VisualScript, NativeScript and CSharpScript
 - Automatically reconnects to the Discord client
+- Two modes for updating timestamp (start of the project vs whenever the screen changes)
 
 
 Automatic Installation
 --------------
+
 Simply install and enable from the `AssetLib` in the Godot Editor. You might need to restart the Godot Editor once the plugin is installed.
+
 
 Manual Installation
 --------------
@@ -43,9 +46,13 @@ Once the plugin is enabled, close and open `ProjectSettings`. Now you can custom
 
 To hide a certain button, simply set the label to an empty string.
 
-<img src="https://cdn.discordapp.com/attachments/360062738615107605/928502193148014602/unknown.png" height="400">
+<img src="https://cdn.discordapp.com/attachments/360062738615107605/937919245277360218/unknown.png" height="400">
 
+### Customizing the timestamp mode
 
+Once the plugin is enabled, close and open `ProjectSettings`. Now you can customize the timestamp mode by editing the toggle value in the `Settings` section in `Discord Presence` section. Then to apply the changes, disable and enable the plugin.
+
+If `Change time per screen` is disabled (default) the timestamp on the Discord presence will be updated at the start of the project. If enabled, the timestamp will be updated whenever the screen in Godot changes (e.g when you open a new scene, script, etc).
 
 
 Contributing

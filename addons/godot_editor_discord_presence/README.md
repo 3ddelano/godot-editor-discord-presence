@@ -7,7 +7,7 @@ Godot Editor Discord Presence
 
 > Supports Windows, Linux and OSX
 
-<img alt="Godot3" src="https://img.shields.io/badge/-Godot 3.x-478CBF?style=for-the-badge&logo=godotengine&logoWidth=20&logoColor=white" />
+<img alt="Godot3" src="https://img.shields.io/badge/-Godot >= 3.2.2-478CBF?style=for-the-badge&logo=godotengine&logoWidth=20&logoColor=white" />
 <br>
 
 
@@ -17,20 +17,24 @@ Godot Editor Discord Presence
 Features
 --------------
 
-- Updates the presence in real-time
+- Updates the Discord presence in real-time
 - Has two customizable URL buttons
 - Supports showing scripts like GDScript, VisualScript, NativeScript and CSharpScript
-- Automatically reconnects to Discord client
+- Automatically reconnects to the Discord client
+- Two modes for updating timestamp (start of the project vs whenever the screen changes)
+
 
 Automatic Installation
 --------------
-Simply install from the `AssetLib` in the Godot Editor
+
+Simply install and enable from the `AssetLib` in the Godot Editor. You might need to restart the Godot Editor once the plugin is installed.
+
 
 Manual Installation
 --------------
 
 This is a regular plugin for Godot.
-Copy the contents of `addons/godot_editor_discord_presence/` into the `res://addons/godot_editor_discord_presence/` folder which is your project directory. Then goto `ProjectSettings` and activate it in the `Plugins` tab.
+Copy the contents of `addons/godot_editor_discord_presence/` into the `res://addons/godot_editor_discord_presence/` folder which is in your project directory. You might need to restart the Godot Editor once the plugin is installed. Then goto `ProjectSettings` and activate it in the `Plugins` tab. 
 
 **Optional:** To exclude the plugin when exporting your project, you can add `addons/godot_editor_discord_presence/*` to the `Filters to exclude files/folders from project` in the Export settings.
 
@@ -42,9 +46,13 @@ Once the plugin is enabled, close and open `ProjectSettings`. Now you can custom
 
 To hide a certain button, simply set the label to an empty string.
 
-<img src="https://cdn.discordapp.com/attachments/360062738615107605/928502193148014602/unknown.png" height="400">
+<img src="https://cdn.discordapp.com/attachments/360062738615107605/937919245277360218/unknown.png" height="400">
 
+### Customizing the timestamp mode
 
+Once the plugin is enabled, close and open `ProjectSettings`. Now you can customize the timestamp mode by editing the toggle value in the `Settings` section in `Discord Presence` section. Then to apply the changes, disable and enable the plugin.
+
+If `Change time per screen` is disabled (default) the timestamp on the Discord presence will be updated at the start of the project. If enabled, the timestamp will be updated whenever the screen in Godot changes (e.g when you open a new scene, script, etc).
 
 
 Contributing

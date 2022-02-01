@@ -4,6 +4,10 @@ Changelog
 This is a high-level changelog for each released versions of the plugin.
 For a more detailed list of past changes, see the commit history.
 
+1.2.4
+------
+- Added toggle to change between updating timestamp at the start vs whenever screen changes. (`discord_presence/settings/change_time_per_screen`)
+
 1.2.3
 ------
 - Fixed a bug that only showed the script as presence instead of showing the current editor

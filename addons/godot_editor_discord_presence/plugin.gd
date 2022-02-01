@@ -21,6 +21,7 @@ const CSHARPSCRIPT = "C# Script"
 
 const FIRST_BUTTON_PATH = "discord_presence/first_button"
 const SECOND_BUTTON_PATH = "discord_presence/second_button"
+const TIME_CHECKBOX_PATH = "discord_presence/settings/change_time_per_screen"
 
 var _current_script_name: String
 var _current_scene_name: String
@@ -33,6 +34,7 @@ var _previous_large_image_text: String
 var _is_reconnecting = false
 var _reconnect_timer: Timer
 var _is_ready = false
+var _change_time_per_screen = false
 
 var application_id: int = 928212232213520454
 var rpc: DiscordRPC = null
@@ -178,6 +180,11 @@ func _init_presence(dont_init := false) -> void:
 		if label != "" and url != "":
 			presence.second_button = RichPresenceButton.new(label, url)
 
+	if ProjectSettings.has_setting(TIME_CHECKBOX_PATH):
+		var change_time_per_screen = ProjectSettings.get_setting(TIME_CHECKBOX_PATH)
+		_change_time_per_screen = change_time_per_screen
+
+
 	if is_null and rpc and is_instance_valid(rpc) and rpc.is_connected_to_client():
 		rpc.get_module("RichPresence").update_presence(presence)
 
@@ -289,7 +296,8 @@ func _update(send_previous := false) -> void:
 
 	if just_started or should_update:
 		if not send_previous or presence.start_timestamp == 0:
-			presence.start_timestamp = OS.get_unix_time()
+			if _change_time_per_screen:
+				presence.start_timestamp = OS.get_unix_time()
 		should_update = true
 
 	if presence.details != _previous_details or presence.large_image_text != _previous_large_image_text:
@@ -320,23 +328,25 @@ func _add_custom_settings():
 	_add_custom_project_setting(SECOND_BUTTON_PATH + "/label", "", TYPE_STRING, PROPERTY_HINT_PLACEHOLDER_TEXT, "The label for the Second Button of Discord Status")
 	_add_custom_project_setting(SECOND_BUTTON_PATH + "/url", "", TYPE_STRING, PROPERTY_HINT_PLACEHOLDER_TEXT, "The URL for the Second Button of Discord Status")
 
+	_add_custom_project_setting(TIME_CHECKBOX_PATH, false, TYPE_BOOL, PROPERTY_HINT_PLACEHOLDER_TEXT, "Whether to update the timer for each screen in the Editor")
+
 	var error: int = ProjectSettings.save()
 	if error: push_error("Encountered error %d when trying to add custom button settings to ProjectSettings." % error)
 
 
-func _add_custom_project_setting(name: String, default_value, type: int, hint: int = PROPERTY_HINT_NONE, hint_string: String = "") -> void:
-	if ProjectSettings.has_setting(name): return
+func _add_custom_project_setting(_name: String, default_value, type: int, hint: int = PROPERTY_HINT_NONE, hint_string: String = "") -> void:
+	if ProjectSettings.has_setting(_name): return
 
 	var setting_info: Dictionary = {
-		"name": name,
+		"name": _name,
 		"type": type,
 		"hint": hint,
 		"hint_string": hint_string
 	}
 
-	ProjectSettings.set_setting(name, default_value)
+	ProjectSettings.set_setting(_name, default_value)
 	ProjectSettings.add_property_info(setting_info)
-	ProjectSettings.set_initial_value(name, default_value)
+	ProjectSettings.set_initial_value(_name, default_value)
 
 
 func _remove_custom_settings():
@@ -344,6 +354,7 @@ func _remove_custom_settings():
 	_remove_custom_project_setting(FIRST_BUTTON_PATH + "/url")
 	_remove_custom_project_setting(SECOND_BUTTON_PATH + "/label")
 	_remove_custom_project_setting(SECOND_BUTTON_PATH + "/url")
+	_remove_custom_project_setting(TIME_CHECKBOX_PATH)
 	var error: int = ProjectSettings.save()
 	if error: push_error("Encountered error %d when trying to remove custom button settings from ProjectSettings." % error)
 
