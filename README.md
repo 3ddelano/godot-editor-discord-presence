@@ -1,6 +1,6 @@
 Godot Editor Discord Presence
 =========================================
-###### (Get it from Godot Asset Library - Coming soon)
+###### (Get it from Godot Asset Library - [Editor Discord Presence](https://godotengine.org/asset-library/asset/1166))
 
 
 ### Shows what you are doing in the Godot Editor as your Discord presence.
