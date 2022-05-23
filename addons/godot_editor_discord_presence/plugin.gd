@@ -247,16 +247,19 @@ func _update(send_previous := false) -> void:
 	_init_presence(not send_previous)
 	presence.small_image_key = ASSETNAMES.LOGO_SMALL
 	presence.small_image_text = "Godot Engine"
-	presence.large_image_key = ASSETNAMES[_current_editor_name]
+	if _current_editor_name in ASSETNAMES:
+		presence.large_image_key = ASSETNAMES[_current_editor_name]
+	else:
+		presence.large_image_key = ASSETNAMES.LOGO_SMALL
 
 	match _current_editor_name:
 		_2D:
 			presence.details = "Editing %s" % _current_scene_name
-			presence.large_image_text = "Editing scene in 2D"
+			presence.large_image_text = "In 2D editor"
 
 		_3D:
 			presence.details = "Editing %s" % _current_scene_name
-			presence.large_image_text = "Editing scene in 3D"
+			presence.large_image_text = "In 3D editor"
 
 		SCRIPT:
 			var script_type = SCRIPT
@@ -290,8 +293,11 @@ func _update(send_previous := false) -> void:
 
 		ASSETLIB:
 			presence.details = "Browsing Asset Libary"
-			presence.large_image_text = "Browsing the Asset Library"
+			presence.large_image_text = "Browsing Asset Library"
 			just_started = true
+		_:
+			presence.details = "In %s editor" % _current_editor_name
+			presence.large_image_text = "In %s editor" % _current_editor_name
 
 
 	if just_started or should_update:
