@@ -42,7 +42,7 @@ Copy the contents of `addons/godot_editor_discord_presence/` into the `res://add
 
 ### Customizing the buttons
 
-Once the plugin is enabled, close and open `ProjectSettings`. Now you can customize the two buttons by editing the values in the `Discord Presence` section. Then to apply the changes, disable and enable the plugin.
+Once the plugin is enabled, close and open `ProjectSettings`. Now you can customize the two buttons by editing the values in the `Discord Presence` section. **Then to apply the changes, disable and enable the plugin.**
 
 To hide a certain button, simply set the label to an empty string.
 
@@ -50,7 +50,7 @@ To hide a certain button, simply set the label to an empty string.
 
 ### Customizing the timestamp mode
 
-Once the plugin is enabled, close and open `ProjectSettings`. Now you can customize the timestamp mode by editing the toggle value in the `Settings` section in `Discord Presence` section. Then to apply the changes, disable and enable the plugin.
+Once the plugin is enabled, close and open `ProjectSettings`. Now you can customize the timestamp mode by editing the toggle value in the `Settings` section in `Discord Presence` section. **Then to apply the changes, disable and enable the plugin.**
 
 If `Change time per screen` is disabled (default) the timestamp on the Discord presence will be updated at the start of the project. If enabled, the timestamp will be updated whenever the screen in Godot changes (e.g when you open a new scene, script, etc).
 
