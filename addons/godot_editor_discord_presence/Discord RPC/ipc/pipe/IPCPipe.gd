@@ -1,4 +1,3 @@
-class_name IPCPipe
 
 func open(_path: String) -> int:
 	return ERR_UNAVAILABLE

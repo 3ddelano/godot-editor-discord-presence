@@ -1,4 +1,3 @@
-class_name IPCPayload
 
 enum OpCodes {
 	HANDSHAKE,
@@ -22,7 +21,7 @@ func generate_nonce() -> void:
 	self.nonce = UUID.v4()
 
 func is_error() -> bool:
-	return event == DiscordRPCEnum.Events.ERROR
+	return event == DiscordRPCUtil.Events.ERROR
 
 func get_error_code() -> int:
 	var code: int
@@ -38,11 +37,12 @@ func get_error_messsage() -> String:
 
 func to_dict() -> Dictionary:
 	return {
-		"nonce": self.nonce,
-		"cmd": self.command,
-		"evt": self.event if not self.event.empty() else null,
-		"data": self.data,
-		"args": self.arguments
+		nonce = self.nonce,
+		cmd = self.command,
+		# warning-ignore:incompatible_ternary
+		evt = self.event if not self.event.empty() else null,
+		data = self.data,
+		args = self.arguments
 	}
 
 func to_bytes() -> PoolByteArray:
@@ -50,8 +50,9 @@ func to_bytes() -> PoolByteArray:
 	var stream: StreamPeerBuffer = StreamPeerBuffer.new()
 	stream.put_32(self.op_code)
 	stream.put_32(buffer.size())
+	# warning-ignore:return_value_discarded
 	stream.put_data(buffer)
 	return stream.data_array
 
 func _to_string() -> String:
-	return "op_code: %s, payload: %s" %  [self.op_code, to_json(self.to_dict())]
+	return ("op_code: %d\n" % op_code) + JSON.print(to_dict(), "\t")

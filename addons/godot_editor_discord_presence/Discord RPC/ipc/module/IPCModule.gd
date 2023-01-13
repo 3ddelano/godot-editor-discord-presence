@@ -1,4 +1,5 @@
-class_name IPCModule
+
+const IPC: Script = preload("../IPC.gd")
 
 var _ipc: IPC
 

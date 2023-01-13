@@ -1,10 +1,10 @@
 
-class_name UpdateRichPresencePayload extends IPCPayload
-
+class_name UpdateRichPresencePayload extends "../../IPCPayload.gd"
+	
 func _init(presence: RichPresence) -> void:
 
 	self.op_code = OpCodes.FRAME
-	self.command = DiscordRPCEnum.Commands.SET_ACTIVITY
+	self.command = DiscordRPCUtil.Commands.SET_ACTIVITY
 	self.arguments = {
 		"pid": OS.get_process_id(),
 		# warning-ignore:incompatible_ternary
