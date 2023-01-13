@@ -6,6 +6,7 @@ For a more detailed list of past changes, see the commit history.
 
 1.2.5
 ------
+- Fixed a bug that caused Godot to crash after varying time on Linux
 - Fixed a bug that caused error message to print when you switch to a main screen editor other than 2D, 3D, Script or AssetLib
 - Changed the large_image_text for 2D and 3D editors to be the same as the large_image_text for the main screen editor
 - (Godot Unix Socket) Replaced x86 `libunixsocket.dylib` with universal dylib to support M1
