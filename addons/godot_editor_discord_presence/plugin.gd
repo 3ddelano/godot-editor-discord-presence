@@ -169,7 +169,7 @@ func _init_presence(dont_init := false) -> void:
 	presence.state = "Project: %s" % ProjectSettings.get_setting("application/config/name")
 	presence.start_timestamp = Time.get_unix_time_from_system()
 	presence.large_image_key = ASSETNAMES.LOGO_LARGE
-	presence.large_image_text = "Working checked a Godot project"
+	presence.large_image_text = "Working on a Godot project"
 
 	if ProjectSettings.has_setting(FIRST_BUTTON_PATH + "/label") and ProjectSettings.has_setting(FIRST_BUTTON_PATH + "/url"):
 		var label = ProjectSettings.get_setting(FIRST_BUTTON_PATH + "/label")
@@ -273,7 +273,7 @@ func _update(send_previous := false) -> void:
 				just_started = true
 
 			var extension = _current_script_name.get_extension().to_lower()
-			# Find the type of the script based checked the extension
+			# Find the type of the script based on the extension
 			match extension:
 				"gd":
 					script_type = GDSCRIPT
@@ -365,7 +365,7 @@ func _remove_custom_settings():
 	_remove_custom_project_setting(SECOND_BUTTON_PATH + "/url")
 	_remove_custom_project_setting(TIME_CHECKBOX_PATH)
 	var error: int = ProjectSettings.save()
-	if error: push_error("Encountered error %d when trying to remove_at custom button settings from ProjectSettings." % error)
+	if error: push_error("Encountered error %d when trying to remove custom button settings from ProjectSettings." % error)
 
 
 func _remove_custom_project_setting(name: String) -> void:

@@ -16,7 +16,7 @@ static func getRandomInt() -> int:
 	return randi() % MODULO_8_BIT
 
 static func uuidbin() -> PackedByteArray:
-	# 16 random bytes with the bytes checked index 6 and 8 modified
+	# 16 random bytes with the bytes on index 6 and 8 modified
 	return PackedByteArray([
 		getRandomInt(), getRandomInt(), getRandomInt(), getRandomInt(),
 		getRandomInt(), getRandomInt(), ((getRandomInt()) & 0x0f) | 0x40, getRandomInt(),
@@ -25,7 +25,7 @@ static func uuidbin() -> PackedByteArray:
 	])
 
 static func v4() -> String:
-	# 16 random bytes with the bytes checked index 6 and 8 modified
+	# 16 random bytes with the bytes on index 6 and 8 modified
 	var b: PackedByteArray = uuidbin()
 	
 	return '%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x' % [

@@ -20,11 +20,11 @@ signal authenticated(application, expires)
 # reference: https://discord.com/developers/docs/topics/rpc#guildstatus
 signal guild_status(id, name, icon_url)
 
-# Emitted when a guild is created/joined checked the client
+# Emitted when a guild is created/joined on the client
 # reference: https://discord.com/developers/docs/topics/rpc#guildcreate
 signal guild_create(id, name)
 
-# Emitted when a channel is created/joined checked the client
+# Emitted when a channel is created/joined on the client
 # reference: https://discord.com/developers/docs/topics/rpc#channelcreate
 signal channel_create(id, name, type)
 
@@ -154,7 +154,7 @@ func _ready() -> void:
 	set_process(status != DISCONNECTED)
 
 # Attempt to connect to a Discord client instance
-# emits `rpc_ready` checked success, otherwise `rpc_error`
+# emits `rpc_ready` on success, otherwise `rpc_error`
 func establish_connection(_client_id: int) -> void:
 	if is_connected_to_client():
 		push_error("This DiscordRPC instance is already in an active connection")
