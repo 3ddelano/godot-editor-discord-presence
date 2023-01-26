@@ -1,4 +1,3 @@
-
 enum OpCodes {
 	HANDSHAKE,
 	FRAME,
@@ -6,6 +5,9 @@ enum OpCodes {
 	PING,
 	PONG
 }
+
+const UUID: Script = preload("../util/UUID.gd")
+const DiscordRPCUtil = preload("../RPC.gd")
 
 var op_code: int = OpCodes.PING
 var nonce: String
@@ -40,13 +42,13 @@ func to_dict() -> Dictionary:
 		nonce = self.nonce,
 		cmd = self.command,
 		# warning-ignore:incompatible_ternary
-		evt = self.event if not self.event.empty() else null,
+		evt = self.event if not self.event.is_empty() else null,
 		data = self.data,
 		args = self.arguments
 	}
 
-func to_bytes() -> PoolByteArray:
-	var buffer: PoolByteArray = to_json(self.to_dict()).to_utf8()
+func to_bytes() -> PackedByteArray:
+	var buffer: PackedByteArray = JSON.new().stringify(self.to_dict()).to_utf8_buffer()
 	var stream: StreamPeerBuffer = StreamPeerBuffer.new()
 	stream.put_32(self.op_code)
 	stream.put_32(buffer.size())
@@ -55,4 +57,4 @@ func to_bytes() -> PoolByteArray:
 	return stream.data_array
 
 func _to_string() -> String:
-	return ("op_code: %d\n" % op_code) + JSON.print(to_dict(), "\t")
+	return ("op_code: %d\n" % op_code) + JSON.stringify(to_dict(), "\t")

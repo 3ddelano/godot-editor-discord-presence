@@ -1,8 +1,7 @@
-
 class_name UpdateRichPresencePayload extends "../../IPCPayload.gd"
-	
-func _init(presence: RichPresence) -> void:
 
+func _init(presence: RichPresence) -> void:
+	super()
 	self.op_code = OpCodes.FRAME
 	self.command = DiscordRPCUtil.Commands.SET_ACTIVITY
 	self.arguments = {

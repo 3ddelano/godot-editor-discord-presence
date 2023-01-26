@@ -8,15 +8,15 @@ func open(path: String) -> int:
 
 func read() -> Array:
 	if not is_open():
-		return [-1, PoolByteArray()]
+		return [-1, PackedByteArray()]
 	
 	var op_code: int = _peer.get_32()
 	var length: int = _peer.get_32()
-	var buffer: PoolByteArray = _peer.get_data(length)[1]
+	var buffer: PackedByteArray = _peer.get_data(length)[1]
 	
 	return [op_code, buffer]
 
-func write(bytes: PoolByteArray) -> void:
+func write(bytes: PackedByteArray) -> void:
 	if is_open():
 		_peer.put_data(bytes)
 

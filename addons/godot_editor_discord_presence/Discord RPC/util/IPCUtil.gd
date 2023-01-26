@@ -1,6 +1,6 @@
 class_name IPCUtil
 
-const IPCPayload: Script = preload("../ipc/IPCPayload.gd")
+const IPCPayload = preload("../ipc/IPCPayload.gd")
 
 class HandshakePayload extends IPCPayload:
 	var version: int
@@ -9,6 +9,7 @@ class HandshakePayload extends IPCPayload:
 	# warning-ignore:shadowed_variable
 	# warning-ignore:shadowed_variable
 	func _init(version: int, client_id: int) -> void:
+		super()
 		self.op_code = OpCodes.HANDSHAKE
 		self.version = version
 		self.client_id = client_id
@@ -20,7 +21,8 @@ class HandshakePayload extends IPCPayload:
 		}
 
 class AuthorizePayload extends IPCPayload:
-	func _init(client_id: int, scopes: PoolStringArray) -> void:
+	func _init(client_id: int, scopes: PackedStringArray) -> void:
+		super()
 		self.op_code = OpCodes.FRAME
 		self.command = DiscordRPCUtil.Commands.AUTHORIZE
 		self.arguments = {
@@ -30,12 +32,14 @@ class AuthorizePayload extends IPCPayload:
 
 class AuthenticatePayload extends IPCPayload:
 	func _init(access_token: String) -> void:
+		super()
 		self.op_code = OpCodes.FRAME
 		self.command = DiscordRPCUtil.Commands.AUTHENTICATE
 		self.arguments = {"access_token": access_token}
 
 class SubscribePayload extends IPCPayload:
 	func _init(subscribe_event: String, arg: Dictionary) -> void:
+		super()
 		self.op_code = OpCodes.FRAME
 		self.command = DiscordRPCUtil.Commands.SUBSCRIBE
 		self.arguments = arg
@@ -43,6 +47,7 @@ class SubscribePayload extends IPCPayload:
 
 class UnsubscribePayload extends IPCPayload:
 	func _init(usubscribe_event: String, arg: Dictionary) -> void:
+		super()
 		self.op_code = OpCodes.FRAME
 		self.command = DiscordRPCUtil.Commands.UNSUBSCRIBE
 		self.arguments = arg
