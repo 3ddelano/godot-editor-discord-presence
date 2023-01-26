@@ -1,11 +1,10 @@
-
 func open(_path: String) -> int:
 	return ERR_UNAVAILABLE
 
 func read() -> Array:
 	return []
 
-func write(_bytes: PoolByteArray) -> void:
+func write(_bytes: PackedByteArray) -> void:
 	pass
 
 func is_open() -> bool:

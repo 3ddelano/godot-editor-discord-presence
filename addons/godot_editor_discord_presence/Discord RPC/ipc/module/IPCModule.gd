@@ -1,4 +1,3 @@
-
 const IPC: Script = preload("../IPC.gd")
 
 var _ipc: IPC
@@ -11,8 +10,8 @@ func _init(_name: String) -> void:
 func initilize(ipc: IPC) -> void:
 	self._ipc = ipc
 
-func get_functions() -> PoolStringArray:
-	return PoolStringArray()
+func get_functions() -> PackedStringArray:
+	return PackedStringArray()
 
 func requires_authorize() -> bool:
 	return false

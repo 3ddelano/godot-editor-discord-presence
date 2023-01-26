@@ -2,6 +2,8 @@ class_name RichPresence
 
 # warning-ignore-all:narrowing_conversion
 
+const RichPresenceButton: Script = preload("./RichPresenceButton.gd")
+
 var state: String
 var details: String
 var start_timestamp: int
@@ -11,8 +13,8 @@ var large_image_text: String
 var small_image_key: String
 var small_image_text: String
 var party_id: String
-var party_size: int setget set_party_size
-var party_max: int setget set_party_max
+var party_size: int : set = set_party_size
+var party_max: int : set = set_party_max
 var match_secret: String
 var join_secret: String
 var spectate_secret: String
@@ -31,9 +33,9 @@ func set_party_max(value: int) -> void:
 func to_dict() -> Dictionary:
 	var data: Dictionary = {"instance": self.instance}
 	
-	if (not self.state.empty()):
+	if (not self.state.is_empty()):
 		data["state"] = self.state
-	if (not self.details.empty()):
+	if (not self.details.is_empty()):
 		data["details"] = self.details
 	
 	var timestamps: Dictionary = {}
@@ -41,33 +43,33 @@ func to_dict() -> Dictionary:
 		timestamps["start"] = self.start_timestamp
 	if (self.end_timestamp > 0):
 		timestamps["end"] = self.end_timestamp
-	if (not timestamps.empty()):
+	if (not timestamps.is_empty()):
 		data["timestamps"] = timestamps
 	
 	var assets: Dictionary = {}
-	if (not self.large_image_key.empty()):
+	if (not self.large_image_key.is_empty()):
 		assets["large_image"] = self.large_image_key	
-	if (not self.large_image_text.empty()):
+	if (not self.large_image_text.is_empty()):
 		assets["large_text"] = self.large_image_text
-	if (not self.small_image_key.empty()):
+	if (not self.small_image_key.is_empty()):
 		assets["small_image"] = self.small_image_key
-	if (not self.small_image_text.empty()):
+	if (not self.small_image_text.is_empty()):
 		assets["small_text"] = self.small_image_text
-	if (not assets.empty()):
+	if (not assets.is_empty()):
 		data["assets"] = assets
 	
 	var secrets: Dictionary = {}
-	if (not self.join_secret.empty()):
+	if (not self.join_secret.is_empty()):
 		secrets["join"] = self.join_secret
-	if (not self.spectate_secret.empty()):
+	if (not self.spectate_secret.is_empty()):
 		secrets["spectate"] = self.spectate_secret
-	if (not self.match_secret.empty()):
+	if (not self.match_secret.is_empty()):
 		secrets["instanced_match"] = self.match_secret
-	if (not secrets.empty()):
+	if (not secrets.is_empty()):
 		data["secrets"] = secrets
 	
 	var party: Dictionary = {}
-	if (not self.party_id.empty()):
+	if (not self.party_id.is_empty()):
 		party["id"] = self.party_id
 	if (self.party_max > 0):
 		party["size"] = [self.party_size, self.party_max]
@@ -78,7 +80,7 @@ func to_dict() -> Dictionary:
 		buttons.append(first_button.to_dict())
 	if (second_button):
 		buttons.append(second_button.to_dict())
-	if (not buttons.empty()):
+	if (not buttons.is_empty()):
 		data["buttons"] = buttons
 	
 	return data

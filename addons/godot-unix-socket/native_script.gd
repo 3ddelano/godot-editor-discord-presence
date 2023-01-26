@@ -1,8 +1,8 @@
-tool
+@tool
 extends NativeScript
 
 const LIBRARY: GDNativeLibrary = preload("unix-socket.gdnlib")
-const SUPPORTED_PLATFORMS := PoolStringArray([
+const SUPPORTED_PLATFORMS := PackedStringArray([
 	"OSX",
 	"Server",
 	"X11"

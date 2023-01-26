@@ -3,8 +3,11 @@
 # Author: (3ddelano) Delano Lourenco
 # For license: See LICENSE.md
 
-tool
+@tool
 extends EditorPlugin
+
+const RichPresenceButton: Script = preload("./Discord RPC/ipc/module/rich presence/RichPresenceButton.gd")
+
 const DEBUG = false
 const RECONNECT_DURATION = 60
 
@@ -57,13 +60,13 @@ func debug_print(string: String):
 func _enter_tree() -> void:
 	_reconnect_timer = Timer.new()
 	_reconnect_timer.one_shot = true
-	_reconnect_timer.connect("timeout", self, "_on_reconnect_timer_timeout")
+	_reconnect_timer.connect("timeout", Callable(self, "_on_reconnect_timer_timeout"))
 	_reconnect_timer.wait_time = RECONNECT_DURATION
 	add_child(_reconnect_timer)
 
-	connect("main_screen_changed", self, "_on_main_scene_changed")
-	connect("scene_changed", self, "_on_scene_changed")
-	get_editor_interface().get_script_editor().connect("editor_script_changed", self, "_on_editor_script_changed")
+	connect("main_screen_changed", Callable(self, "_on_main_scene_changed"))
+	connect("scene_changed", Callable(self, "_on_scene_changed"))
+	get_editor_interface().get_script_editor().connect("editor_script_changed", Callable(self, "_on_editor_script_changed"))
 
 	if not rpc:
 		_init_discord_rpc()
@@ -72,9 +75,9 @@ func _enter_tree() -> void:
 
 
 func _exit_tree() -> void:
-	disconnect("main_screen_changed", self, "_on_main_scene_changed")
-	disconnect("scene_changed", self, "_on_scene_changed")
-	get_editor_interface().get_script_editor().disconnect("editor_script_changed", self, "_on_editor_script_changed")
+	disconnect("main_screen_changed", Callable(self, "_on_main_scene_changed"))
+	disconnect("scene_changed", Callable(self, "_on_scene_changed"))
+	get_editor_interface().get_script_editor().disconnect("editor_script_changed", Callable(self, "_on_editor_script_changed"))
 
 	if is_instance_valid(_reconnect_timer):
 		_reconnect_timer.queue_free()
@@ -87,7 +90,7 @@ func _exit_tree() -> void:
 
 
 
-func disable_plugin() -> void:
+func _disable_plugin() -> void:
 	if rpc and is_instance_valid(rpc):
 		_destroy_discord_rpc()
 
@@ -123,10 +126,10 @@ func _on_rpc_error(err) -> void:
 func _init_discord_rpc() -> void:
 	debug_print("Initializing DiscordRPC")
 	rpc = DiscordRPC.new()
-	rpc.connect("rpc_error", self, "_on_rpc_error")
+	rpc.connect("rpc_error", Callable(self, "_on_rpc_error"))
 	add_child(rpc)
-	rpc.connect("rpc_ready", self, "_on_rpc_ready")
-	rpc.connect("rpc_closed", self, "_on_rpc_closed")
+	rpc.connect("rpc_ready", Callable(self, "_on_rpc_ready"))
+	rpc.connect("rpc_closed", Callable(self, "_on_rpc_closed"))
 	rpc.establish_connection(application_id)
 
 
@@ -164,7 +167,7 @@ func _init_presence(dont_init := false) -> void:
 	# Initial Presence Details
 	presence.details = "In Godot Editor"
 	presence.state = "Project: %s" % ProjectSettings.get_setting("application/config/name")
-	presence.start_timestamp = OS.get_unix_time()
+	presence.start_timestamp = Time.get_unix_time_from_system()
 	presence.large_image_key = ASSETNAMES.LOGO_LARGE
 	presence.large_image_text = "Working on a Godot project"
 
@@ -211,7 +214,7 @@ func _on_main_scene_changed(screen_name: String) -> void:
 
 func _on_scene_changed(screen_root: Node) -> void:
 	if is_instance_valid(screen_root):
-		_current_scene_name = screen_root.filename.get_file()
+		_current_scene_name = screen_root.scene_file_path.get_file()
 		debug_print("Scene changed: " + _current_scene_name)
 		_update()
 
@@ -230,7 +233,7 @@ func _update(send_previous := false) -> void:
 			# Get the name of the currently opened scene
 			var scene = get_editor_interface().get_edited_scene_root()
 			if scene:
-				_current_scene_name = scene.filename.get_file()
+				_current_scene_name = scene.scene_file_path.get_file()
 
 			if is_previous_in_scene_editors:
 				# Previous was also 2d or 3d
@@ -303,7 +306,7 @@ func _update(send_previous := false) -> void:
 	if just_started or should_update:
 		if not send_previous or presence.start_timestamp == 0:
 			if _change_time_per_screen:
-				presence.start_timestamp = OS.get_unix_time()
+				presence.start_timestamp = Time.get_unix_time_from_system()
 		should_update = true
 
 	if presence.details != _previous_details or presence.large_image_text != _previous_large_image_text:

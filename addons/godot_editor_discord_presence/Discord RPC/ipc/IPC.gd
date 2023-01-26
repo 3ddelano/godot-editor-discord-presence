@@ -1,10 +1,10 @@
-tool
+@tool
 
 # warning-ignore-all:return_value_discarded
 
 signal data_recieved(payload)
 
-const IPCPayload: Script = preload("./IPCPayload.gd")
+const IPCPayload = preload("./IPCPayload.gd")
 const IPCPipe: Script = preload("./pipe/IPCPipe.gd")
 const UnixPipe: Script = preload("./pipe/UnixPipe.gd")
 const WindowsPipe: Script = preload("./pipe/WindowsPipe.gd")
@@ -20,7 +20,7 @@ func open(path: String) -> int:
 func send(request: IPCPayload) -> IPCPayload:
 	if not is_open():
 		push_error("IPC: Can not send payloads while not connected to a discord client instance")
-		return yield()
+		return null
 	
 	var op_code: int = request.op_code
 	var nonce: String = request.nonce
@@ -29,7 +29,7 @@ func send(request: IPCPayload) -> IPCPayload:
 	
 	var response: IPCPayload = null
 	while not response:
-		var payload: IPCPayload = yield(self, "data_recieved")
+		var payload: IPCPayload = await self.data_recieved
 		if op_code == IPCPayload.OpCodes.HANDSHAKE:
 			response = payload 
 		elif payload.nonce == nonce:
@@ -50,13 +50,14 @@ func scan() -> IPCPayload:
 	
 	var data: Array = self._pipe.read()
 	var op_code: int = data[0]
-	var buffer: PoolByteArray =  data[1]
+	var buffer: PackedByteArray =  data[1]
 	
-	var parse_result: JSONParseResult = JSON.parse(buffer.get_string_from_utf8())
-	if parse_result.error != OK:
+	var parse_result: JSON = JSON.new()
+	var parse_error = parse_result.parse(buffer.get_string_from_utf8())
+	if parse_error != OK:
 		push_error("Failed decoding packet of legnth: %d with opcode: %d" % [buffer.size(), op_code])
 		return null
-	var body: Dictionary = parse_result.result
+	var body: Dictionary = parse_result.data
 	
 	var response: IPCPayload = IPCPayload.new()
 	response.op_code = op_code
@@ -106,7 +107,7 @@ static func get_pipe_path(index: int) -> String:
 				if (OS.has_environment(env_var)):
 					path = OS.get_environment(env_var) + "/"
 					break
-			if path.empty():
+			if path.is_empty():
 				path = "/tmp/"
 		_:
 			return ""

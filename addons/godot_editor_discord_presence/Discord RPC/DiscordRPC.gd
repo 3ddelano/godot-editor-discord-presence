@@ -114,8 +114,10 @@ enum {
 }
 
 const IPC: Script = preload("./ipc/IPC.gd")
-const IPCPayload: Script = preload("./ipc/IPCPayload.gd")
+const IPCPayload = preload("./ipc/IPCPayload.gd")
 const IPCModule: Script = preload("./ipc/module/IPCModule.gd")
+const URLUtil: Script = preload("./util/URLUtil.gd")
+const DiscordRPCUtil = preload("./RPC.gd")
 
 const PING_INTERVAL_MS: int = 5_000
 const PING_TIMEOUT_MS: int = 10_000
@@ -126,26 +128,26 @@ const VERSION: int = 1
 
 const DISCORD_API_ENDPOINT: String = "https://discord.com/api/%s"
 
-var _ipc: IPC setget __set
-var _modules: Dictionary setget __set
-var _next_ping: int setget __set
-var _last_ping: int setget __set
-var _sent_ping: bool setget __set
-var _recieved_pong: bool setget __set
-var _ping_nonce: String setget __set
+var _ipc: IPC
+var _modules: Dictionary
+var _next_ping: int
+var _last_ping: int
+var _sent_ping: bool
+var _recieved_pong: bool
+var _ping_nonce: String
 
 # Current status of DiscordRPC instance
-var status: int = DISCONNECTED setget __set
+var status: int = DISCONNECTED
 
 # Discord application id
-var client_id: int setget __set
+var client_id: int
 
 # Current authorized scopes
-var scopes: PoolStringArray setget __set
+var scopes: PackedStringArray
 
 func _init() -> void:
 	_ipc = IPC.new()
-	_ipc.connect("data_recieved", self, "_on_data")
+	_ipc.connect("data_recieved", Callable(self, "_on_data"))
 	install_module(RichPresenceModule.new())
 
 func _ready() -> void:
@@ -189,17 +191,17 @@ func is_connected_to_client() -> bool:
 # By default this pops up a modal in-app that asks the user to authorize access to your app
 # `scopes` a PoolSringArray of OAuth2 scopes: https://discord.com/developers/docs/topics/oauth2#shared-resources-oauth2-scopes
 # `secret` OAuth2 client's sceret code
-func authorize(_scopes: PoolStringArray, secret: String) -> void:
+func authorize(_scopes: PackedStringArray, secret: String) -> void:
 	if not is_connected_to_client():
 		push_error("DiscordRPC can not authorize while not connected")
 		return
 		
 	var request: IPCPayload = IPCUtil.AuthorizePayload.new(self.client_id, _scopes)
-	var response: IPCPayload = yield(self._ipc.send(request), "completed")
+	var response: IPCPayload = await self._ipc.send(request)
 	if not response.is_error():
 		var code: String = response.data["code"]
-		var auth_token: String = yield(self.get_auth_token(code, secret), "completed")
-		if not auth_token.empty():
+		var auth_token: String = await self.get_auth_token(code, secret)
+		if not auth_token.is_empty():
 			emit_signal("authorized", auth_token)
 			authenticate(auth_token)
 
@@ -210,7 +212,7 @@ func authenticate(access_token: String) -> void:
 		return
 		
 	var request: IPCPayload = IPCUtil.AuthenticatePayload.new(access_token)
-	var response: IPCPayload = yield(self._ipc.send(request), "completed")
+	var response: IPCPayload = await self._ipc.send(request)
 	if not response.is_error():
 		scopes = response.data["scopes"]
 		emit_signal("authenticated", response.data["application"], response.data["expires"])
@@ -218,7 +220,7 @@ func authenticate(access_token: String) -> void:
 func get_auth_token(authorize_code: String, secret: String, redirect_uri: String = "http://127.0.0.1") -> String:
 	var http_request: HTTPRequest = HTTPRequest.new()
 	var url: String = DISCORD_API_ENDPOINT % "oauth2/token"
-	var headers: PoolStringArray = ["Content-Type: application/x-www-form-urlencoded"]
+	var headers: PackedStringArray = ["Content-Type: application/x-www-form-urlencoded"]
 	var data: Dictionary = {
 		client_id = self.client_id,
 		client_secret = secret,
@@ -235,14 +237,14 @@ func get_auth_token(authorize_code: String, secret: String, redirect_uri: String
 		HTTPClient.METHOD_POST,
 		URLUtil.dict_to_url_encoded(data)
 	)
-	var response: Array = yield(http_request, "request_completed")
+	var response: Array = await http_request.request_completed
 	var _result: int = response[0]
 	var _code: int = response[1]
-	var body: PoolByteArray = response[3]
+	var body: PackedByteArray = response[3]
 	
 	http_request.queue_free()
 
-	return parse_json(body.get_string_from_utf8()).get("access_token", "")
+	return JSON.parse_string(body.get_string_from_utf8()).get("access_token", "")
 
 # Used to subscribe to events in order for some signals to be emitted
 # `event` is the event name to subscribe to in UPPER_CASE
@@ -297,10 +299,10 @@ func _handshake() -> void:
 		return
 		
 	var request: IPCPayload = IPCUtil.HandshakePayload.new(VERSION, self.client_id)
-	var response: IPCPayload = yield(self._ipc.send(request), "completed")
+	var response: IPCPayload = await self._ipc.send(request)
 	if response.op_code != IPCPayload.OpCodes.CLOSE and not response.is_error():
 		status = CONNECTED
-		_next_ping = OS.get_ticks_msec() + PING_INTERVAL_MS
+		_next_ping = Time.get_ticks_msec() + PING_INTERVAL_MS
 		emit_signal("rpc_ready", response.data["user"])
 		return
 	emit_signal("rpc_error", ERR_HANDSHAKE)
@@ -320,7 +322,7 @@ func _process(_delta: float) -> void:
 	if status != CONNECTED:
 		return
 	
-	var current_ticks: int = OS.get_ticks_msec()
+	var current_ticks: int = Time.get_ticks_msec()
 	if not _sent_ping and _next_ping <= current_ticks:
 		var payload: IPCPayload = IPCPayload.new()
 		payload.op_code = IPCPayload.OpCodes.PING
